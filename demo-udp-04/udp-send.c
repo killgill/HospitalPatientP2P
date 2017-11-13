@@ -18,6 +18,7 @@
 
 #define BUFLEN 2048
 #define MSGS 5	/* number of messages to send */
+#define MYPORT 44444
 
 int main(void)
 {
@@ -37,7 +38,7 @@ int main(void)
 	memset((char *)&myaddr, 0, sizeof(myaddr));
 	myaddr.sin_family = AF_INET;
 	myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	myaddr.sin_port = htons(0);
+	myaddr.sin_port = htons(44444);
 
 	if (bind(fd, (struct sockaddr *)&myaddr, sizeof(myaddr)) < 0) {
 		perror("bind failed");

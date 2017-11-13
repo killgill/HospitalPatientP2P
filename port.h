@@ -1,0 +1,7 @@
+#define HCPORT 30285
+#define P1PORT 51285
+#define P2PORT 52285
+#define P3PORT 53285
+#define P4PORT 54285
+#define D1PORT 41285
+#define D2PORT 42285
