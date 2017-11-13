@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <string>
 
 #define HCPORT "30285"    
 #define P1PORT "51285"
@@ -56,7 +57,7 @@ int main(void)
 
     freeaddrinfo(servinfo);
 
-    printf("talker: sent %d bytes to %s\n", numbytes, argv[1]);
+    printf("talker: sent %d bytes to %s\n", numbytes, HCPORT);
     close(sockfd);
 
     return 0;
