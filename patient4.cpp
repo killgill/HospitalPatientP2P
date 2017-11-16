@@ -28,7 +28,7 @@
 
 int main(void)
 {
-    sleep(1);
+    sleep(4);
     //chooses doctor randomly
     unsigned seed = time(0);
     srand(seed);
@@ -61,13 +61,13 @@ int main(void)
 
     bind(sockfd, servinfo->ai_addr, servinfo->ai_addrlen); //binds socket to port from getaddrinfo()
 
-    int P1TCP;
+    int P4TCP;
     struct sockaddr_in sin;
     socklen_t len = sizeof(sin);
     if (getsockname(sockfd, (struct sockaddr *)&sin, &len) == -1)
         perror("getsockname");
     else
-        P1TCP = ntohs(sin.sin_port);
+        P4TCP = ntohs(sin.sin_port);
 
     /* create a UDP socket */
 
@@ -87,7 +87,7 @@ int main(void)
     memset((char *)&myaddr, 0, sizeof(myaddr));
     myaddr.sin_family = AF_INET;
     myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    myaddr.sin_port = htons(P1PORT);
+    myaddr.sin_port = htons(P4PORT);
 
     if (bind(fd, (struct sockaddr *)&myaddr, sizeof(myaddr)) < 0) {
         perror("bind failed");
@@ -107,7 +107,7 @@ int main(void)
     }
 
     /* now let's send the messages */
-    sprintf(buf, "patient1 %s %d doctor%d", server, P1TCP, doctor);
+    sprintf(buf, "patient4 %s %d doctor%d", server, P4TCP, doctor);
     if (sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, slen)==-1) {
         perror("sendto");
         exit(1);
@@ -116,7 +116,7 @@ int main(void)
     // recvlen = recvfrom(fd, buf, BUFLEN, 0, (struct sockaddr *)&remaddr, (unsigned int*)&slen);
     //         if (recvlen >= 0) {
     //                 buf[recvlen] = 0;   /* expect a printable string - terminate it */
-    //                 printf("patient2: \"%s\"\n", buf);
+    //                 printf("patient4: \"%s\"\n", buf);
     //         }
 
     close(fd);

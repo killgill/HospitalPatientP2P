@@ -28,7 +28,7 @@
 
 int main(void)
 {
-    sleep(1);
+    // sleep(1);
     //chooses doctor randomly
     unsigned seed = time(0);
     srand(seed);
@@ -61,13 +61,13 @@ int main(void)
 
     bind(sockfd, servinfo->ai_addr, servinfo->ai_addrlen); //binds socket to port from getaddrinfo()
 
-    int P1TCP;
+    int D1TCP;
     struct sockaddr_in sin;
     socklen_t len = sizeof(sin);
     if (getsockname(sockfd, (struct sockaddr *)&sin, &len) == -1)
         perror("getsockname");
     else
-        P1TCP = ntohs(sin.sin_port);
+        D1TCP = ntohs(sin.sin_port);
 
     /* create a UDP socket */
 
@@ -87,7 +87,7 @@ int main(void)
     memset((char *)&myaddr, 0, sizeof(myaddr));
     myaddr.sin_family = AF_INET;
     myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    myaddr.sin_port = htons(P1PORT);
+    myaddr.sin_port = htons(D1PORT);
 
     if (bind(fd, (struct sockaddr *)&myaddr, sizeof(myaddr)) < 0) {
         perror("bind failed");
@@ -107,7 +107,7 @@ int main(void)
     }
 
     /* now let's send the messages */
-    sprintf(buf, "patient1 %s %d doctor%d", server, P1TCP, doctor);
+    sprintf(buf, "doctor1 dct1");
     if (sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, slen)==-1) {
         perror("sendto");
         exit(1);
