@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="ee450-pa2" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/ee450-pa2" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/ee450-pa2" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+		</Compiler>
+		<Unit filename="demo-udp-01/demo-udp-01.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="demo-udp-02/demo-udp-02.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="demo-udp-03/port.h" />
+		<Unit filename="demo-udp-03/udp-client.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="demo-udp-03/udp-recv.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="demo-udp-03/udp-send.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="demo-udp-03/udp-server.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="demo-udp-04/port.h" />
+		<Unit filename="demo-udp-04/udp-recv.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="demo-udp-04/udp-send.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="doctor1.cpp" />
+		<Unit filename="doctor2.cpp" />
+		<Unit filename="healthcenter.cpp" />
+		<Unit filename="healthcenter.h" />
+		<Unit filename="patient1.cpp" />
+		<Unit filename="patient2.cpp" />
+		<Unit filename="patient3.cpp" />
+		<Unit filename="patient4.cpp" />
+		<Extensions>
+			<envvars />
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
