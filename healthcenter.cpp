@@ -129,7 +129,7 @@ main(int argc, char **argv)
                 case 2:
                     if (buf == "doctor2 dct2") {
                         if (sendto(fd, "directory.txt", strlen(buf), 0, (struct sockaddr *)&d2addr, addrlen) < 0)
-                            perror("sendto");
+                            perror("sen");
                     }
                     else {
                         printf("doctor2 is a phony\n");
