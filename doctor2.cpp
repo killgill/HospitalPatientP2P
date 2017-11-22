@@ -34,7 +34,7 @@ using namespace std;
 
 int main(void)
 {
-    sleep(6);
+    sleep(8);
     //chooses doctor randomly
     unsigned seed = time(0);
     srand(seed);
@@ -124,6 +124,7 @@ int main(void)
                     buf[recvlen] = 0;   /* expect a printable string - terminate it */
                     printf("doctor2: \"%s\"\n", buf);
             }
+    
     string directory(buf);
     ifstream docfile;
     docfile.open ("doctor2.txt");
@@ -142,22 +143,114 @@ int main(void)
     string patientip;
     string patienttcp;
     string patientdoctor;
-    int subscribers;
+    int subscribers = 0;
     while(getline(patientfile,temp)){
         stringstream(temp) >> patientnumber >> patientip >> patienttcp >> patientdoctor;
         if (patientdoctor == "doctor2") {
-            patients+= temp;
-            patients+= "\n";   
-            subscribers++;         
+            patients+= patientnumber + " " + patienttcp;
+            patients+= "\n"; 
+            subscribers++;           
         }
     }
     cout.flush();
-    // cout << "\n" << "dis dat d2\n" << patients << "\n";
-
-
-
-
+    switch(subscribers) {
+        case 0:
+            cout << "Doctor2 has no peer subscribers\n";
+            exit(0);
+        case 1:
+            cout << "Doctor2 has only one patient subscriber\n";
+            break;
+        default:
+            cout << "Doctor2 has " << subscribers << " patients!\n";
+            break;
+    }
 
     close(fd);
+
+    getline(stringstream(patients),temp);
+    string patientport;
+    stringstream(temp) >> patientnumber >> patientport;
+    char *PTCP = patientport.c_str();
+    cout.flush();
+    // printf("the port number is %s\n", PTCP);
+
+    struct addrinfo hints2, *cl; //*cl points to results
+
+    memset(&hints2, 0, sizeof hints2); //ensures empty struct
+    hints2.ai_family = AF_UNSPEC; //doesn't matter if IPv4 or IPv6
+    hints2.ai_socktype = SOCK_STREAM; //TCP stream
+    hints2.ai_flags= AI_PASSIVE; //local IP
+
+    // checks for error with getaddrinfo and prints debug info
+    // also ensures that clpoints to the addrinfos from the struct
+    int status2;
+    if ((status2 = getaddrinfo(NULL,PTCP,&hints2,&cl)) != 0) {
+        fprintf(stderr, "gettaddrinfo error: %s\n", gai_strerror(status2));
+        exit(1);
+    }
+
+    // create the socket
+    int cl_skt = socket(cl->ai_family, cl->ai_socktype, cl->ai_protocol);
+
+    //sorts out address in use errors
+    int yes2 = 1;
+    if (setsockopt(cl_skt,SOL_SOCKET,SO_REUSEADDR,&yes2,sizeof yes2) == -1) {
+        perror("setsockopt");
+        exit(1);
+    }   
+
+    //connect to the server
+    connect(cl_skt,cl->ai_addr,cl->ai_addrlen);
+
+    //generate and send message
+    const char *msg = "Welcome to the Doctor2 group\n";
+    int msglen;
+    msglen = strlen(msg);
+    send(cl_skt, msg, msglen, 0);
+
+    char buf2[BUFLEN];
+    int numbytes;
+    if ((numbytes = recv(cl_skt, buf2, BUFLEN-1, 0)) == -1)
+    {
+        perror("recv");
+        exit(1);
+    }
+    printf("Doctor2: %s\n", buf2);
+
+    string subs = to_string(subscribers-1) + " more subscriber(s)"+ "\n";
+    istringstream patientss(patients);
+    getline(patientss,temp);
+    while(getline(patientss,temp)){
+        subs+=temp + "\n";
+    }
+    msg = subs.c_str();
+    msglen = strlen(msg);
+    send(cl_skt, msg, msglen, 0);
+
+    if ((numbytes = recv(cl_skt, buf2, BUFLEN-1, 0)) == -1)
+    {
+        perror("recv");
+        exit(1);
+    }
+    printf("Doctor2: %s\n", buf2);
+
+    string sched;
+    istringstream scheduless(schedule);
+    while(getline(scheduless,temp)){
+        sched+=temp + "\n";
+    }
+    msg = sched.c_str();
+    msglen = strlen(msg);
+    send(cl_skt, msg, msglen, 0);
+
+    if ((numbytes = recv(cl_skt, buf2, BUFLEN-1, 0)) == -1)
+    {
+        perror("recv");
+        exit(1);
+    }
+    printf("Doctor2: %s\n", buf2);
+
+    close(cl_skt);
+
     exit(0);
 }

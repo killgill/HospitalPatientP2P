@@ -36,8 +36,8 @@ int main(void)
     //chooses doctor randomly
     unsigned seed = time(0);
     srand(seed);
-    // int doctor = 1 + (rand()%2);
-    int doctor = 1;
+    int doctor = 1 + (rand()%2);
+    // int doctor = 1;
 
     //Create TCP socket dynamically
     struct addrinfo hints, *servinfo; //*servinfo points to results
@@ -148,57 +148,152 @@ int main(void)
     }
 
     printf("patient1: %s\n", buf2); //prints bugger
-    string bufstring(buf);
-    cout << bufstring;
-    istringstream bufstream(bufstring);
-    string doctornumber;
-    // bufstream.ignore(1000," ");
-    // bufstream.ignore(1000," ");
-    // bufstream.ignore(1000," ");
-    bufstream >> doctornumber;
-    cout.flush();
-    printf("Patient1 joined %s\n", doctornumber);
+    const char *whichdoc = buf2;
+    char docnumber = buf2[21];
+    printf("Patient1 joined Doctor%c\n", docnumber);
 
-    memset(buf2, 0, sizeof buf2);
+    const char *msg = "Ack";
+    int msglen, bytes_sent;
+    msglen = strlen(msg);
+    bytes_sent = send(new_socket , msg, msglen, 0);
 
-    if ((numbytes = recv(new_socket, buf2, BUFLEN-1, 0)) == -1)
+    // memset(buf2, 0, sizeof buf2);
+    char buf3[BUFLEN];
+
+    if ((numbytes = recv(new_socket, buf3, BUFLEN-1, 0)) == -1)
     {
         perror("recv");
         exit(1);
     }
+    buf3[numbytes] = 0;
 
+    printf("patient1: %s\n", buf3); //prints bugger
 
     string temp;
     string patients;
-    bufstream.str().clear();
-    bufstream.str(buf2);
-    int subscribers;
-    getline(bufstream,temp);
-    stringstream(temp) >> subscribers;
-
-    printf("patient1: %s\n", buf2); //prints bugger
-
-    for (int i = 0; i <= subscribers; ++i)
+    string bufstring3(buf3);
+    istringstream bufstream3(bufstring3);
+    int subscribers = 0;
+    stringstream(buf3) >> subscribers;
+    getline(bufstream3,temp);
+    while(getline(bufstream3,temp))
     {
-        getline(bufstream,temp);
         patients+= temp + "\n";
     }
-    string schedule;
-    getline(bufstream,temp);
-    while(getline(bufstream,temp)){
-        schedule+=temp + "\n";
-    }
 
-    memset(buf2, 0, sizeof buf2);
+    bytes_sent = send(new_socket , msg, msglen, 0);
 
-    if ((numbytes = recv(new_socket, buf2, BUFLEN-1, 0)) == -1)
+    char buf4[BUFLEN];
+    if ((numbytes = recv(new_socket, buf4, BUFLEN-1, 0)) == -1)
     {
         perror("recv");
         exit(1);
     }
-    printf("patient1: %s\n", buf2); //prints bugger
+    buf4[numbytes] = 0;
 
-    cout << "schedule" << schedule;
+    string bufstring4(buf4);
+    istringstream bufstream4(bufstring4);
+    string schedule;
+    while(getline(bufstream4,temp)){
+        schedule+=temp + "\n";
+    }
+
+    printf("patient1: %s\n", buf4); //prints bugger
+
+    bytes_sent = send(new_socket , msg, msglen, 0);
+
+    close(new_socket);
+
+    if (subscribers > 0)
+    {
+        cout.flush();
+        istringstream substream(patients);
+        getline(substream,temp);
+        string patientport;
+        string patientnumber;
+        stringstream(temp) >> patientnumber >> patientport;
+        char *PTCP = patientport.c_str();
+        // printf("port is %s\n", PTCP);
+        // cout << "We made it";
+
+        struct addrinfo hints2, *cl; //*cl points to results
+
+        memset(&hints2, 0, sizeof hints2); //ensures empty struct
+        hints2.ai_family = AF_UNSPEC; //doesn't matter if IPv4 or IPv6
+        hints2.ai_socktype = SOCK_STREAM; //TCP stream
+        hints2.ai_flags= AI_PASSIVE; //local IP
+
+        // checks for error with getaddrinfo and prints debug info
+        // also ensures that clpoints to the addrinfos from the struct
+        int status2;
+        if ((status2 = getaddrinfo(NULL,PTCP,&hints2,&cl)) != 0) {
+            fprintf(stderr, "gettaddrinfo error: %s\n", gai_strerror(status2));
+            exit(1);
+        }
+
+        // create the socket
+        int cl_skt = socket(cl->ai_family, cl->ai_socktype, cl->ai_protocol);
+
+        //sorts out address in use errors
+        int yes2 = 1;
+        if (setsockopt(cl_skt,SOL_SOCKET,SO_REUSEADDR,&yes2,sizeof yes2) == -1) {
+            perror("setsockopt");
+            exit(1);
+        }   
+
+        //connect to the server
+        connect(cl_skt,cl->ai_addr,cl->ai_addrlen);
+
+        //generate and send message
+
+        const char *msg = whichdoc;
+        int msglen;
+        msglen = strlen(msg);
+        send(cl_skt, msg, msglen, 0);
+
+        char buf2[BUFLEN];
+        int numbytes;
+        if ((numbytes = recv(cl_skt, buf2, BUFLEN-1, 0)) == -1)
+        {
+            perror("recv");
+            exit(1);
+        }
+        printf("Patient1: %s\n", buf2);
+
+        string subs = to_string(subscribers-1) + " more subscriber(s)"+ "\n";
+        istringstream patientss(patients);
+        getline(patientss,temp);
+        while(getline(patientss,temp)){
+            subs+=temp + "\n";
+        }
+        msg = subs.c_str();
+        msglen = strlen(msg);
+        send(cl_skt, msg, msglen, 0);
+
+        if ((numbytes = recv(cl_skt, buf2, BUFLEN-1, 0)) == -1)
+        {
+            perror("recv");
+            exit(1);
+        }
+        printf("Patient1: %s\n", buf2);
+        
+        string sched;
+        istringstream scheduless(schedule);
+        getline(scheduless,temp);
+        while(getline(scheduless,temp)){
+            sched+=temp + "\n";
+        }
+        msg = sched.c_str();
+        msglen = strlen(msg);
+        send(cl_skt, msg, msglen, 0);
+
+        if ((numbytes = recv(cl_skt, buf2, BUFLEN-1, 0)) == -1)
+        {
+            perror("recv");
+            exit(1);
+        }
+        printf("Patient1: %s\n", buf2);
+    }
 
     exit(0);
 

@@ -153,7 +153,6 @@ int main(void)
         }
     }
     cout.flush();
-    cout << "\n" << "dis dat d1 patients\n" << patients << "\n";
     switch(subscribers) {
         case 0:
             cout << "Doctor1 has no peer subscribers\n";
@@ -173,7 +172,7 @@ int main(void)
     stringstream(temp) >> patientnumber >> patientport;
     char *PTCP = patientport.c_str();
     cout.flush();
-    printf("the port number is %s\n", PTCP);
+    // printf("the port number is %s\n", PTCP);
 
     struct addrinfo hints2, *cl; //*cl points to results
 
@@ -209,7 +208,16 @@ int main(void)
     msglen = strlen(msg);
     send(cl_skt, msg, msglen, 0);
 
-    string subs = to_string(subscribers-1) + "\n";
+    char buf2[BUFLEN];
+    int numbytes;
+    if ((numbytes = recv(cl_skt, buf2, BUFLEN-1, 0)) == -1)
+    {
+        perror("recv");
+        exit(1);
+    }
+    printf("Doctor1: %s\n", buf2);
+
+    string subs = to_string(subscribers-1) + " more subscriber(s)"+ "\n";
     istringstream patientss(patients);
     getline(patientss,temp);
     while(getline(patientss,temp)){
@@ -219,6 +227,13 @@ int main(void)
     msglen = strlen(msg);
     send(cl_skt, msg, msglen, 0);
 
+    if ((numbytes = recv(cl_skt, buf2, BUFLEN-1, 0)) == -1)
+    {
+        perror("recv");
+        exit(1);
+    }
+    printf("Doctor1: %s\n", buf2);
+
     string sched;
     istringstream scheduless(schedule);
     while(getline(scheduless,temp)){
@@ -227,6 +242,15 @@ int main(void)
     msg = sched.c_str();
     msglen = strlen(msg);
     send(cl_skt, msg, msglen, 0);
-    
+
+    if ((numbytes = recv(cl_skt, buf2, BUFLEN-1, 0)) == -1)
+    {
+        perror("recv");
+        exit(1);
+    }
+    printf("Doctor1: %s\n", buf2);
+
+    close(cl_skt);
+
     exit(0);
 }
