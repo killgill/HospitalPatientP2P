@@ -1,14 +1,3 @@
-/*
-        demo-udp-03: udp-send: a simple udp client
-    send udp messages
-    This sends a sequence of messages (the # of messages is defined in MSGS)
-    The messages are sent to a port defined in HCPORT 
-
-        usage:  udp-send
-
-        Paul Krzyzanowski
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

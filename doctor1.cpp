@@ -1,14 +1,3 @@
-/*
-        demo-udp-03: udp-send: a simple udp client
-    send udp messages
-    This sends a sequence of messages (the # of messages is defined in MSGS)
-    The messages are sent to a port defined in HCPORT 
-
-        usage:  udp-send
-
-        Paul Krzyzanowski
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -28,13 +17,12 @@
 
 
 #define BUFLEN 2048
-#define MSGS 5  /* number of messages to send */
 using namespace std;
 
 
 int main(void)
 {
-    sleep(5);
+    sleep(1);
     //chooses doctor randomly
     unsigned seed = time(0);
     srand(seed);
@@ -125,6 +113,7 @@ int main(void)
                     printf("doctor1: \"%s\"\n", buf);
             }
     
+    //reads schedule from file
     string directory(buf);
     ifstream docfile;
     docfile.open ("doctor1.txt");
@@ -135,7 +124,8 @@ int main(void)
         schedule+= "\n";
     }
     docfile.close();
-    cout.flush();
+
+    //reads patient data from directory sent by healthcenter
     ifstream patientfile;
     patientfile.open (directory);
     string patients;
@@ -147,12 +137,12 @@ int main(void)
     while(getline(patientfile,temp)){
         stringstream(temp) >> patientnumber >> patientip >> patienttcp >> patientdoctor;
         if (patientdoctor == "doctor1") {
-            patients+= patientnumber + " " + patienttcp;
+            patients+= patientnumber + " " + patienttcp; //doesn't add doctor or IP
             patients+= "\n"; 
             subscribers++;           
         }
     }
-    cout.flush();
+    //different messages based on number of subscribers
     switch(subscribers) {
         case 0:
             cout << "Doctor1 has no peer subscribers\n";
@@ -165,15 +155,15 @@ int main(void)
             break;
     }
 
-    close(fd);
+    close(fd); //socket no longer needed
 
+    //extracts the TCP port number from the patients file
     getline(stringstream(patients),temp);
     string patientport;
     stringstream(temp) >> patientnumber >> patientport;
     char *PTCP = patientport.c_str();
-    cout.flush();
-    // printf("the port number is %s\n", PTCP);
 
+    //setting up TCP connection to first patient
     struct addrinfo hints2, *cl; //*cl points to results
 
     memset(&hints2, 0, sizeof hints2); //ensures empty struct
@@ -208,6 +198,7 @@ int main(void)
     msglen = strlen(msg);
     send(cl_skt, msg, msglen, 0);
 
+    //receives ACK
     char buf2[BUFLEN];
     int numbytes;
     if ((numbytes = recv(cl_skt, buf2, BUFLEN-1, 0)) == -1)
@@ -217,6 +208,8 @@ int main(void)
     }
     printf("Doctor1: %s\n", buf2);
 
+    //creates string of other patients that has the number of patients left
+    //and the patients
     string subs = to_string(subscribers-1) + " more subscriber(s)"+ "\n";
     istringstream patientss(patients);
     getline(patientss,temp);
@@ -227,6 +220,7 @@ int main(void)
     msglen = strlen(msg);
     send(cl_skt, msg, msglen, 0);
 
+    //receive ack
     if ((numbytes = recv(cl_skt, buf2, BUFLEN-1, 0)) == -1)
     {
         perror("recv");
@@ -234,6 +228,7 @@ int main(void)
     }
     printf("Doctor1: %s\n", buf2);
 
+    //sends scehdule
     string sched;
     istringstream scheduless(schedule);
     while(getline(scheduless,temp)){
@@ -243,6 +238,7 @@ int main(void)
     msglen = strlen(msg);
     send(cl_skt, msg, msglen, 0);
 
+    //receive ack
     if ((numbytes = recv(cl_skt, buf2, BUFLEN-1, 0)) == -1)
     {
         perror("recv");

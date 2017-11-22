@@ -1,12 +1,3 @@
-/*
-        demo-udp-03: udp-recv: a simple udp server
-    receive udp messages
-
-        usage:  udp-recv
-
-        Paul Krzyzanowski
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -90,11 +81,9 @@ main(int argc, char **argv)
     }
     myfile.close();                  
     cout.flush();
-    cout << "Registration of peers completed! Run the doctors!\n";
-  
-    //exit(0);////////////////////////////////////////////////////////////////////////////////////
+    cout << "Registration of peers completed! Run the doctors!\n";//cue to run doctors
 
-
+    //creates UDP connections with both doctors to listen
     memset((char *) &d1addr, 0, sizeof(d1addr));
     d1addr.sin_family = AF_INET;
     d1addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -115,6 +104,7 @@ main(int argc, char **argv)
 
     int numDoctors = 0;
 
+    //this loop listens to the doctors
     for (;;) {
         if (numDoctors == 2){
             break;
@@ -127,21 +117,19 @@ main(int argc, char **argv)
             printf("healthcenter: incoming message from doctor%c\n", docnumber);
             printf("healthcenter: %s\n",buf );
             switch(buf[6]) {
-                case 49:
-                    if (bufstring == "doctor1 dct1") {
+                case 49://ascii 1
+                    if (bufstring == "doctor1 dct1") { //checks username and password
                         if (sendto(fd, "directory.txt\n", strlen("directory.txt"), 0, (struct sockaddr *)&d1addr, addrlen) < 0)
                             perror("sendto");                        
-                            // printf("doc1 is legit\n");
                     }
                     else {
                         printf("doctor1 is a phony\n");
                     }
                     break;
-                case 50:
+                case 50://ascii 2
                     if (bufstring == "doctor2 dct2") {
                         if (sendto(fd, "directory.txt\n", strlen("directory.txt"), 0, (struct sockaddr *)&d2addr, addrlen) < 0)
                             perror("sendto");
-                            // printf("doc2 is legit\n");
 
                     }
                     else {
@@ -149,7 +137,7 @@ main(int argc, char **argv)
                     }
                     break;                
                 }
-            numDoctors++;         
+            numDoctors++;//ensures that only 2 doctors send messages     
         }
         else {
             printf("uh oh - something went wrong!\n");

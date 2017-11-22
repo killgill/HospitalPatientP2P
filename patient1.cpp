@@ -1,14 +1,3 @@
-/*
-        demo-udp-03: udp-send: a simple udp client
-    send udp messages
-    This sends a sequence of messages (the # of messages is defined in MSGS)
-    The messages are sent to a port defined in HCPORT 
-
-        usage:  udp-send
-
-        Paul Krzyzanowski
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -140,26 +129,27 @@ int main(void)
 
     int numbytes;
 
-    // Receives the packet, and also does a small error check.
+    // Receives the packet saying which network,
     if ((numbytes = recv(new_socket, buf2, BUFLEN-1, 0)) == -1)
     {
         perror("recv");
         exit(1);
     }
 
-    printf("patient1: %s\n", buf2); //prints bugger
+    printf("patient1: %s\n", buf2); //prints buffer
     const char *whichdoc = buf2;
     char docnumber = buf2[21];
     printf("Patient1 joined Doctor%c\n", docnumber);
 
+    //sends ack
     const char *msg = "Ack";
     int msglen, bytes_sent;
     msglen = strlen(msg);
     bytes_sent = send(new_socket , msg, msglen, 0);
 
-    // memset(buf2, 0, sizeof buf2);
     char buf3[BUFLEN];
-
+    //receives the number of remaining patients and if applicable,
+    //their TCP ports
     if ((numbytes = recv(new_socket, buf3, BUFLEN-1, 0)) == -1)
     {
         perror("recv");
@@ -167,22 +157,23 @@ int main(void)
     }
     buf3[numbytes] = 0;
 
-    printf("patient1: %s\n", buf3); //prints bugger
+    printf("patient1: %s\n", buf3); //prints buffer
 
     string temp;
     string patients;
     string bufstring3(buf3);
     istringstream bufstream3(bufstring3);
     int subscribers = 0;
-    stringstream(buf3) >> subscribers;
-    getline(bufstream3,temp);
-    while(getline(bufstream3,temp))
+    stringstream(buf3) >> subscribers; //first line is number of patients left
+    getline(bufstream3,temp);//skips the first line
+    while(getline(bufstream3,temp))//grabs all the patients information
     {
         patients+= temp + "\n";
     }
-
+    //send ack
     bytes_sent = send(new_socket , msg, msglen, 0);
 
+    //receive schedule
     char buf4[BUFLEN];
     if ((numbytes = recv(new_socket, buf4, BUFLEN-1, 0)) == -1)
     {
@@ -194,27 +185,26 @@ int main(void)
     string bufstring4(buf4);
     istringstream bufstream4(bufstring4);
     string schedule;
+    //extracts scehdule from message
     while(getline(bufstream4,temp)){
         schedule+=temp + "\n";
     }
 
-    printf("patient1: %s\n", buf4); //prints bugger
-
+    printf("patient1: %s\n", buf4); //prints buffer
+    //ack
     bytes_sent = send(new_socket , msg, msglen, 0);
 
     close(new_socket);
-
+    //if more subscribers exist, the p2p comes into play
     if (subscribers > 0)
-    {
-        cout.flush();
+    {   
+        //gets TCP port of first patient
         istringstream substream(patients);
         getline(substream,temp);
         string patientport;
         string patientnumber;
         stringstream(temp) >> patientnumber >> patientport;
         char *PTCP = patientport.c_str();
-        // printf("port is %s\n", PTCP);
-        // cout << "We made it";
 
         struct addrinfo hints2, *cl; //*cl points to results
 
@@ -244,13 +234,14 @@ int main(void)
         //connect to the server
         connect(cl_skt,cl->ai_addr,cl->ai_addrlen);
 
-        //generate and send message
+        //generate and send message with the doctor
 
         const char *msg = whichdoc;
         int msglen;
         msglen = strlen(msg);
         send(cl_skt, msg, msglen, 0);
 
+        //receives ack
         char buf2[BUFLEN];
         int numbytes;
         if ((numbytes = recv(cl_skt, buf2, BUFLEN-1, 0)) == -1)
@@ -260,6 +251,7 @@ int main(void)
         }
         printf("Patient1: %s\n", buf2);
 
+        //sends subscribers, removes the first one (i.e. the patient that the message is being sent to)
         string subs = to_string(subscribers-1) + " more subscriber(s)"+ "\n";
         istringstream patientss(patients);
         getline(patientss,temp);
@@ -269,14 +261,14 @@ int main(void)
         msg = subs.c_str();
         msglen = strlen(msg);
         send(cl_skt, msg, msglen, 0);
-
+        //receive ack
         if ((numbytes = recv(cl_skt, buf2, BUFLEN-1, 0)) == -1)
         {
             perror("recv");
             exit(1);
         }
         printf("Patient1: %s\n", buf2);
-        
+        //send schedule minus the first appointment on it which this patient has taken
         string sched;
         istringstream scheduless(schedule);
         getline(scheduless,temp);
@@ -286,7 +278,7 @@ int main(void)
         msg = sched.c_str();
         msglen = strlen(msg);
         send(cl_skt, msg, msglen, 0);
-
+        //gets ack
         if ((numbytes = recv(cl_skt, buf2, BUFLEN-1, 0)) == -1)
         {
             perror("recv");
