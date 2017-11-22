@@ -22,9 +22,13 @@
 #include <sys/wait.h>
 #include "healthcenter.h"
 #include <ctime>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 #define BUFLEN 2048
 #define MSGS 5  /* number of messages to send */
+using namespace std;
 
 int main(void)
 {
@@ -32,7 +36,8 @@ int main(void)
     //chooses doctor randomly
     unsigned seed = time(0);
     srand(seed);
-    int doctor = 1 + (rand()%2);
+    // int doctor = 1 + (rand()%2);
+    int doctor = 1;
 
     //Create TCP socket dynamically
     struct addrinfo hints, *servinfo; //*servinfo points to results
@@ -120,5 +125,81 @@ int main(void)
     //         }
 
     close(fd);
+
+    listen(sockfd, BACKLOG); //starts listening
+
+    // creates new socket for communication with client
+    struct sockaddr_storage clt_addr;
+    socklen_t addr_size = sizeof(clt_addr);
+    int new_socket= accept(sockfd, (struct sockaddr *)&clt_addr, &addr_size);
+
+    //shutdown(sockfd, SHUT_RDWR);
+    //close(sockfd); //since only one connection is required, the closes the listening socket after it has been established
+
+    char buf2[BUFLEN] = ""; //creates empty string for the buffer with the buffer length
+
+    int numbytes;
+
+    // Receives the packet, and also does a small error check.
+    if ((numbytes = recv(new_socket, buf2, BUFLEN-1, 0)) == -1)
+    {
+        perror("recv");
+        exit(1);
+    }
+
+    printf("patient1: %s\n", buf2); //prints bugger
+    string bufstring(buf);
+    cout << bufstring;
+    istringstream bufstream(bufstring);
+    string doctornumber;
+    // bufstream.ignore(1000," ");
+    // bufstream.ignore(1000," ");
+    // bufstream.ignore(1000," ");
+    bufstream >> doctornumber;
+    cout.flush();
+    printf("Patient1 joined %s\n", doctornumber);
+
+    memset(buf2, 0, sizeof buf2);
+
+    if ((numbytes = recv(new_socket, buf2, BUFLEN-1, 0)) == -1)
+    {
+        perror("recv");
+        exit(1);
+    }
+
+
+    string temp;
+    string patients;
+    bufstream.str().clear();
+    bufstream.str(buf2);
+    int subscribers;
+    getline(bufstream,temp);
+    stringstream(temp) >> subscribers;
+
+    printf("patient1: %s\n", buf2); //prints bugger
+
+    for (int i = 0; i <= subscribers; ++i)
+    {
+        getline(bufstream,temp);
+        patients+= temp + "\n";
+    }
+    string schedule;
+    getline(bufstream,temp);
+    while(getline(bufstream,temp)){
+        schedule+=temp + "\n";
+    }
+
+    memset(buf2, 0, sizeof buf2);
+
+    if ((numbytes = recv(new_socket, buf2, BUFLEN-1, 0)) == -1)
+    {
+        perror("recv");
+        exit(1);
+    }
+    printf("patient1: %s\n", buf2); //prints bugger
+
+    cout << "schedule" << schedule;
+
     exit(0);
+
 }

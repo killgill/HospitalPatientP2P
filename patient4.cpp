@@ -116,7 +116,7 @@ int main(void)
     // recvlen = recvfrom(fd, buf, BUFLEN, 0, (struct sockaddr *)&remaddr, (unsigned int*)&slen);
     //         if (recvlen >= 0) {
     //                 buf[recvlen] = 0;   /* expect a printable string - terminate it */
-    //                 printf("patient4: \"%s\"\n", buf);
+    //                 printf("patient2: \"%s\"\n", buf);
     //         }
 
     close(fd);

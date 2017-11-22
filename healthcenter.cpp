@@ -64,29 +64,36 @@ main(int argc, char **argv)
 
     /* now loop, receiving data and printing what we received */
     for (;;) {
-        if (numPatients == 4){
-            break;
-        }
+
         recvlen = recvfrom(fd, buf, BUFSIZE, 0, (struct sockaddr *)&remaddr, &addrlen);
         if (recvlen > 0) {
             buf[recvlen] = 0;
-            printf("healthcenter: \"%s\n", buf);
+            cout << "healthcenter: " << buf << "\n";
             patientInfo[numPatients] = buf;
-            numPatients++;         
+            numPatients++;
+                if (numPatients == 4){
+                    break;
+                }
         }
         else {
             printf("uh oh - something went wrong!\n");
         }
     }
+    sleep(1);
+    // cout.flush();
     ofstream myfile;
     myfile.open ("directory.txt");
-    for (int i = 0; i < 4; ++i)
+    for (int i = 0; i < 4; i++)
     {
-        myfile << patientInfo[i] << "\n";
+    myfile << patientInfo[i] << "\n";
 
     }
-    myfile.close();
-    printf("Registration of peers completed! Run the doctors!");
+    myfile.close();                  
+    cout.flush();
+    cout << "Registration of peers completed! Run the doctors!\n";
+  
+    //exit(0);////////////////////////////////////////////////////////////////////////////////////
+
 
     memset((char *) &d1addr, 0, sizeof(d1addr));
     d1addr.sin_family = AF_INET;
@@ -115,21 +122,27 @@ main(int argc, char **argv)
         recvlen = recvfrom(fd, buf, BUFSIZE, 0, (struct sockaddr *)&d1addr, &addrlen);
         if (recvlen > 0) {
             buf[recvlen] = 0;
-            printf("healthcenter: incoming message from doctor%s\n", buf[6]);
+            string bufstring(buf);
+            char docnumber = buf[6];
+            printf("healthcenter: incoming message from doctor%c\n", docnumber);
+            printf("healthcenter: %s\n",buf );
             switch(buf[6]) {
-                case 1:
-                    if (buf == "doctor1 dct1") {
-                        if (sendto(fd, "directory.txt", strlen(buf), 0, (struct sockaddr *)&d1addr, addrlen) < 0)
-                            perror("sendto");
+                case 49:
+                    if (bufstring == "doctor1 dct1") {
+                        if (sendto(fd, "directory.txt\n", strlen("directory.txt"), 0, (struct sockaddr *)&d1addr, addrlen) < 0)
+                            perror("sendto");                        
+                            // printf("doc1 is legit\n");
                     }
                     else {
                         printf("doctor1 is a phony\n");
                     }
                     break;
-                case 2:
-                    if (buf == "doctor2 dct2") {
-                        if (sendto(fd, "directory.txt", strlen(buf), 0, (struct sockaddr *)&d2addr, addrlen) < 0)
-                            perror("sen");
+                case 50:
+                    if (bufstring == "doctor2 dct2") {
+                        if (sendto(fd, "directory.txt\n", strlen("directory.txt"), 0, (struct sockaddr *)&d2addr, addrlen) < 0)
+                            perror("sendto");
+                            // printf("doc2 is legit\n");
+
                     }
                     else {
                         printf("doctor2 is a phony\n");

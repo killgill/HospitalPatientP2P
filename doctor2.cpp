@@ -22,13 +22,19 @@
 #include <sys/wait.h>
 #include "healthcenter.h"
 #include <ctime>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
 
 #define BUFLEN 2048
 #define MSGS 5  /* number of messages to send */
+using namespace std;
+
 
 int main(void)
 {
-    sleep(1);
+    sleep(6);
     //chooses doctor randomly
     unsigned seed = time(0);
     srand(seed);
@@ -113,11 +119,44 @@ int main(void)
         exit(1);
     }
     /* now receive an acknowledgement from the server */
-    // recvlen = recvfrom(fd, buf, BUFLEN, 0, (struct sockaddr *)&remaddr, (unsigned int*)&slen);
-    //         if (recvlen >= 0) {
-    //                 buf[recvlen] = 0;   /* expect a printable string - terminate it */
-    //                 printf("patient2: \"%s\"\n", buf);
-    //         }
+    recvlen = recvfrom(fd, buf, BUFLEN, 0, (struct sockaddr *)&remaddr, (unsigned int*)&slen);
+            if (recvlen >= 0) {
+                    buf[recvlen] = 0;   /* expect a printable string - terminate it */
+                    printf("doctor2: \"%s\"\n", buf);
+            }
+    string directory(buf);
+    ifstream docfile;
+    docfile.open ("doctor2.txt");
+    string temp;
+    string schedule;
+    while(getline(docfile,temp)){
+        schedule+= temp;
+        schedule+= "\n";
+    }
+    docfile.close();
+    cout.flush();
+    ifstream patientfile;
+    patientfile.open (directory);
+    string patients;
+    string patientnumber;
+    string patientip;
+    string patienttcp;
+    string patientdoctor;
+    int subscribers;
+    while(getline(patientfile,temp)){
+        stringstream(temp) >> patientnumber >> patientip >> patienttcp >> patientdoctor;
+        if (patientdoctor == "doctor2") {
+            patients+= temp;
+            patients+= "\n";   
+            subscribers++;         
+        }
+    }
+    cout.flush();
+    // cout << "\n" << "dis dat d2\n" << patients << "\n";
+
+
+
+
 
     close(fd);
     exit(0);
